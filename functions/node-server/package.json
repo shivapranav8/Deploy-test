@@ -1,0 +1,24 @@
+{
+  "name": "zapm-copilot-server",
+  "version": "1.0.0",
+  "description": "ZAPM Co-pilot backend server",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "*",
+    "@langchain/community": "*",
+    "@langchain/core": "*",
+    "@langchain/openai": "*",
+    "adm-zip": "*",
+    "cookie-session": "*",
+    "cors": "*",
+    "dotenv": "*",
+    "express": "*",
+    "mammoth": "*",
+    "multer": "*",
+    "tsx": "*",
+    "xlsx": "*"
+  }
+}
