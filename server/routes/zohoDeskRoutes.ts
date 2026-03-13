@@ -82,8 +82,8 @@ zohoDeskRouter.get('/tickets', async (req, res) => {
     try {
         console.log('📋 [Zoho Desk] Fetching open tickets assigned to me...');
         const limit = parseInt(req.query.limit as string) || 50;
-        const token = req.session.zoho?.accessToken;
-        const email = req.session.zoho?.user?.email;
+        const token = req.session.zoho!.accessToken;   // requireZohoAuth already verified this exists
+        const email = req.session.zoho!.user?.email;
         const tickets = await getOpenTicketsAssignedToMe(limit, token, email);
         console.log(`✅ [Zoho Desk] Found ${tickets.length} open tickets`);
         res.json({ tickets, count: tickets.length });
@@ -116,7 +116,7 @@ zohoDeskRouter.post('/bulk-generate', async (req, res) => {
 
     console.log(`🎫 [Zoho Desk] Bulk generating responses for ${ticketIds.length} ticket(s)...`);
 
-    const token = req.session.zoho?.accessToken;
+    const token = req.session.zoho!.accessToken;
 
     // Process each ticket directly by ID — no need to fetch all tickets first
     const results = await Promise.allSettled(
@@ -213,7 +213,7 @@ zohoDeskRouter.post('/tickets/:ticketId/draft', async (req, res) => {
     }
 
     try {
-        const token = req.session.zoho?.accessToken;
+        const token = req.session.zoho!.accessToken;
         console.log(`📝 [Zoho Desk] Saving draft for ticket ${ticketId}...`);
         const result = await saveTicketDraft(ticketId, content, token);
         console.log(`✅ [Zoho Desk] Draft saved: ${result.draftId}`);

@@ -1,3 +1,4 @@
+import { apiFetch } from '../../utils/apiFetch';
 import React, { useState } from 'react';
 import { ArrowLeft, Plus, Clock, TicketCheck, FileText, RefreshCw } from 'lucide-react';
 import { CommunityTicketInput } from './CommunityTicketInput';
@@ -24,7 +25,7 @@ export function CommunityTicketPage({ onBack, onSubmit, ticketData }: CommunityT
     setIsLoadingTickets(true);
     toast.info('Fetching tickets from Zoho Desk...');
     try {
-      const res = await fetch('/api/zoho-desk/tickets', {
+      const res = await apiFetch('/api/zoho-desk/tickets', {
         credentials: 'include',
       });
       if (!res.ok) {
@@ -75,7 +76,7 @@ export function CommunityTicketPage({ onBack, onSubmit, ticketData }: CommunityT
     setGeneratedAnswer('');
     toast.info('Generating AI response...');
     try {
-      const res = await fetch('/api/zoho-desk/bulk-generate', {
+      const res = await apiFetch('/api/zoho-desk/bulk-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -263,7 +264,7 @@ export function CommunityTicketPage({ onBack, onSubmit, ticketData }: CommunityT
               onSaveAsDraft={async () => {
                 if (!generatedAnswer) return;
                 try {
-                  const res = await fetch(`/api/zoho-desk/tickets/${selectedTicket.id}/draft`, {
+                  const res = await apiFetch(`/api/zoho-desk/tickets/${selectedTicket.id}/draft`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',

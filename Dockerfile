@@ -2,19 +2,22 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Install dependencies
+# Copy manifests first for layer caching
 COPY package*.json ./
-RUN npm ci --omit=dev || npm install
 
-# Copy all source files
+# Install ALL dependencies (devDeps needed for vite + tsup build)
+RUN npm ci
+
+# Copy source files
 COPY . .
 
-# Build the frontend
+# Build: vite compiles React → dist/,  tsup compiles server → dist/server/index.js
 RUN npm run build
 
-# Expose the port Catalyst provides
-ENV PORT=8080
-EXPOSE 8080
+# Remove devDependencies after build (keeps runtime deps like express, tsx, etc.)
+RUN npm prune --omit=dev
 
-# Start the Express server in production mode
-CMD ["./node_modules/.bin/tsx", "server/index.ts"]
+# Catalyst injects the port via X_ZOHO_CATALYST_LISTEN_PORT
+EXPOSE 9000
+
+CMD ["node", "dist/server/index.cjs"]

@@ -1,4 +1,3 @@
-import { pipeline } from '@xenova/transformers';
 import mammoth from 'mammoth';
 import XLSX from 'xlsx';
 import fs from 'fs/promises';
@@ -20,6 +19,8 @@ let embedder: any = null;
 async function getEmbedder() {
     if (!embedder) {
         console.log('📥 Downloading embedding model (first time only, ~90MB)...');
+        // Lazy import so missing @xenova package doesn't crash startup
+        const { pipeline } = await import('@xenova/transformers');
         embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
         console.log('✅ Model loaded!');
     }

@@ -1,3 +1,4 @@
+import { apiFetch } from '../utils/apiFetch';
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Plus, Share2, Menu, PanelLeftClose, PanelLeft, ArrowLeft, Users, TicketCheck, PenLine, Code } from 'lucide-react';
 import { FeatureInput } from './components/FeatureInput';
@@ -67,7 +68,7 @@ export default function App() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showFigmaModal, setShowFigmaModal] = useState(false);
   const [figmaDesignUrl, setFigmaDesignUrl] = useState<string>('');
-  
+
   // Chat History
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -179,7 +180,7 @@ export default function App() {
     setIsProcessing(true);
 
     try {
-      const res = await fetch('/api/pm-buddy/competitor-analysis', {
+      const res = await apiFetch('/api/pm-buddy/competitor-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -192,7 +193,7 @@ export default function App() {
       if (!res.ok) {
         const text = await res.text();
         let errMsg = `HTTP ${res.status}`;
-        try { const j = JSON.parse(text); errMsg = j.details || j.error || errMsg; } catch {}
+        try { const j = JSON.parse(text); errMsg = j.details || j.error || errMsg; } catch { }
         throw new Error(errMsg);
       }
       const analysis: CompetitorAnalysisData = await res.json();
@@ -235,7 +236,7 @@ export default function App() {
     setIsProcessing(true);
 
     try {
-      const res = await fetch('/api/pm-buddy/generate-mrd', {
+      const res = await apiFetch('/api/pm-buddy/generate-mrd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ featureData: currentFeatureData, competitorData: competitorData || null }),
@@ -243,7 +244,7 @@ export default function App() {
       if (!res.ok) {
         const text = await res.text();
         let errMsg = `HTTP ${res.status}`;
-        try { const j = JSON.parse(text); errMsg = j.details || j.error || errMsg; } catch {}
+        try { const j = JSON.parse(text); errMsg = j.details || j.error || errMsg; } catch { }
         throw new Error(errMsg);
       }
       const mrd: MRDData = await res.json();
@@ -386,7 +387,7 @@ export default function App() {
     setIsProcessing(true);
 
     try {
-      const res = await fetch('/api/pm-buddy/generate-prd', {
+      const res = await apiFetch('/api/pm-buddy/generate-prd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ featureData: currentFeatureData, mrdData, competitorData }),
@@ -394,7 +395,7 @@ export default function App() {
       if (!res.ok) {
         const text = await res.text();
         let errMsg = `HTTP ${res.status}`;
-        try { const j = JSON.parse(text); errMsg = j.details || j.error || errMsg; } catch {}
+        try { const j = JSON.parse(text); errMsg = j.details || j.error || errMsg; } catch { }
         throw new Error(errMsg);
       }
 
@@ -585,7 +586,7 @@ They can review and provide feedback directly in Cliq!`,
     setIsProcessing(true);
 
     try {
-      const res = await fetch('/api/pm-buddy/chat', {
+      const res = await apiFetch('/api/pm-buddy/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -701,7 +702,7 @@ They can review and provide feedback directly in Cliq!`,
 
       if (data.type === 'zoho') {
         // Step 1: Start the job — returns jobId immediately
-        const startRes = await fetch('/api/zoho-meeting/process', {
+        const startRes = await apiFetch('/api/zoho-meeting/process', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -722,7 +723,7 @@ They can review and provide feedback directly in Cliq!`,
         result = await new Promise<MeetingMoMData>((resolve, reject) => {
           const interval = setInterval(async () => {
             try {
-              const pollRes = await fetch(`/api/zoho-meeting/job/${jobId}`, {
+              const pollRes = await apiFetch(`/api/zoho-meeting/job/${jobId}`, {
                 credentials: 'include',
               });
               if (!pollRes.ok) return;
@@ -741,7 +742,7 @@ They can review and provide feedback directly in Cliq!`,
         });
       } else if (data.type === 'link') {
         setMeetingMoMMessage('Generating MoM from link...');
-        const res = await fetch('/api/meeting-mom/generate', {
+        const res = await apiFetch('/api/meeting-mom/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -771,7 +772,7 @@ They can review and provide feedback directly in Cliq!`,
 
   const handleMeetingMoMDownload = () => {
     if (!meetingMoMData) return;
-    
+
     const content = `
 MINUTES OF MEETING
 ==================
@@ -822,27 +823,27 @@ Generated on: ${new Date().toLocaleString()}
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
+
     toast.success('Meeting minutes downloaded!');
   };
 
   const handleActionItemUpdate = (id: string, updates: Partial<ActionItem>) => {
     if (!meetingMoMData) return;
-    
+
     setMeetingMoMData({
       ...meetingMoMData,
       actionItems: meetingMoMData.actionItems.map(item =>
         item.id === id ? { ...item, ...updates } : item
       )
     });
-    
+
     toast.success('Action item updated!');
   };
 
   // Community Ticket Generator Handlers
   const handleCommunityTicketSubmit = (data: { ticketUrl?: string; issueDescription?: string; category?: string }) => {
     setShowCommunityTicketInput(false);
-    
+
     if (data.ticketUrl) {
       toast.info('Fetching ticket from Zoho Desk...');
       // In real implementation, this would fetch the ticket from Zoho Desk API
@@ -851,7 +852,7 @@ Generated on: ${new Date().toLocaleString()}
       }, 1500);
     } else {
       toast.info('Generating community support ticket...');
-      
+
       setTimeout(() => {
         const mockTicket: CommunityTicketData = {
           ticketTitle: `[${data.category}] Issue with Data Export`,
@@ -888,7 +889,7 @@ Generated on: ${new Date().toLocaleString()}
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/prd-generator/generate', {
+      const res = await apiFetch('/api/prd-generator/generate', {
         method: 'POST',
         body: formData,
       });
@@ -897,7 +898,7 @@ Generated on: ${new Date().toLocaleString()}
         const text = await res.text();
         console.error('PRD API error response:', res.status, text);
         let errMsg = `HTTP ${res.status}`;
-        try { const j = JSON.parse(text); errMsg = j.details || j.error || errMsg; } catch {}
+        try { const j = JSON.parse(text); errMsg = j.details || j.error || errMsg; } catch { }
         throw new Error(errMsg);
       }
 
@@ -936,7 +937,7 @@ Generated on: ${new Date().toLocaleString()}
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/frd/review', {
+      const res = await apiFetch('/api/frd/review', {
         method: 'POST',
         body: formData,
       });
@@ -958,7 +959,7 @@ Generated on: ${new Date().toLocaleString()}
   // View navigation handlers
   const handleViewChange = (view: View) => {
     setCurrentView(view);
-    
+
     // Reset view-specific state
     if (view === 'meeting-mom') {
       setShowMeetingInput(true);
@@ -988,7 +989,7 @@ Generated on: ${new Date().toLocaleString()}
     // Zoho OAuth just redirected back with ?auth_success=1
     if (params.get('auth_success') === '1') {
       // Ask the backend who just logged in (token is stored in their session cookie)
-      fetch('/api/auth/status', { credentials: 'include' })
+      apiFetch('/api/auth/status', { credentials: 'include' })
         .then(r => r.json())
         .then(data => {
           if (data.loggedIn) {
@@ -1033,7 +1034,7 @@ Generated on: ${new Date().toLocaleString()}
 
   const handleSignOut = () => {
     // Tell the backend to clear the session cookie
-    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    apiFetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => { });
     setIsAuthenticated(false);
     setUsername('');
     localStorage.removeItem('zoho_auth');
@@ -1249,7 +1250,7 @@ Generated on: ${new Date().toLocaleString()}
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Toaster position="top-right" />
-      
+
       {/* App Header with User Greeting */}
       <AppHeader username={username} onSignOut={handleSignOut} />
 

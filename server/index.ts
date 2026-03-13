@@ -13,7 +13,11 @@ dotenv.config();
 const isProduction = process.env.NODE_ENV === 'production';
 
 const app = express();
-const PORT = process.env.X_ZOHO_CATALYST_LISTEN_PORT || process.env.PORT || 8080;
+// Trust Catalyst's / Vercel's reverse proxy so req.protocol returns 'https'
+app.set('trust proxy', 1);
+// Catalyst AppSail injects X_ZOHO_CATALYST_LISTEN_PORT at runtime.
+// Always read it; fall back to 9000 for local dev only.
+const PORT = process.env.X_ZOHO_CATALYST_LISTEN_PORT || process.env.PORT || 9000;
 
 console.log('🚀 Starting server...');
 console.log('Environment:', process.env.NODE_ENV);
@@ -68,6 +72,18 @@ app.use('/api/frd', frdRouter);
 app.use('/api/prd-generator', prdGeneratorRouter);
 app.use('/api/pm-buddy', pmBuddyRouter);
 
+// Global error handler — must be AFTER all routes.
+// Catches any error that escapes a route's try/catch (e.g. Express 5 async propagation).
+// Without this, Express sends an HTML 500 page; the frontend can't parse it as JSON.
+app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error(`[UNHANDLED ERROR] ${req.method} ${req.originalUrl}`, err);
+    if (res.headersSent) return;
+    res.status(err.status || 500).json({
+        error: err.message || 'Internal server error',
+        details: err.details || undefined,
+    });
+});
+
 if (isProduction) {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
@@ -104,9 +120,9 @@ if (isProduction) {
 // Export for Vercel
 export default app;
 
-// Only listen if this file is run directly (not as a module/Vercel function)
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`✅ Server running on http://localhost:${PORT}`);
-    });
-}
+// Always start the HTTP server.
+// On Catalyst AppSail, X_ZOHO_CATALYST_LISTEN_PORT is injected at runtime and
+// Catalyst health-checks that exact port — the server MUST be listening on it.
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on port ${PORT} (env: ${process.env.NODE_ENV || 'development'})`);
+});

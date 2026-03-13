@@ -33,17 +33,28 @@ const ZOHO_SCOPE = [
 ].join(',');
 
 function getRedirectUri(req: Request): string {
-    if (process.env.ZOHO_REDIRECT_URI) return process.env.ZOHO_REDIRECT_URI;
-    const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
-    const host = (req.headers['x-forwarded-host'] as string) || req.get('host') || 'localhost:5001';
-    return `${proto}://${host}/api/auth/callback`;
+    const host = req.get('host') || 'localhost:5001';
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'http';
+    const prefix = req.originalUrl?.startsWith('/server/')
+        ? '/' + req.originalUrl.split('/')[1] + '/' + req.originalUrl.split('/')[2]
+        : '';
+    return `${protocol}://${host}${prefix}/api/auth/callback`;
 }
 
 function getFrontendUrl(req: Request): string {
+    // If FRONTEND_URL is explicitly set (e.g. in Catalyst env vars), always use it.
     if (process.env.FRONTEND_URL) return process.env.FRONTEND_URL;
-    const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
-    const host = (req.headers['x-forwarded-host'] as string) || req.get('host') || 'localhost:5173';
-    return `${proto}://${host}`;
+
+    const host = req.get('host') || 'localhost:5001';
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'http';
+
+    // Local dev: backend is on :5001, frontend is on :5174 (Vite)
+    if (host.includes('localhost:') && protocol === 'http') {
+        return 'http://localhost:5174';
+    }
+    // Production (Catalyst): frontend is served at the root of the same domain.
+    // Do NOT include /server/node-server — that's the backend path, not the frontend.
+    return `${protocol}://${host}`;
 }
 
 // Reuse existing Zoho Desk credentials if unified ones aren't set

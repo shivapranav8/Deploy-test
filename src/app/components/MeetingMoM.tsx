@@ -1,3 +1,4 @@
+import { apiFetch } from '../../utils/apiFetch';
 import React, { useState } from 'react';
 import { Download, Share2, CheckCircle2, Clock, Users, Edit2, Save, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -83,7 +84,7 @@ export function MeetingMoM({ data, onUpdate, onShare, onDownload }: MeetingMoMPr
     setIsRegenerating(section);
     toast.info(`Regenerating ${section === 'discussion' ? 'Key Discussions' : 'Actions & Decisions'} from transcript...`);
     try {
-      const res = await fetch('/api/meeting-mom/regenerate-section', {
+      const res = await apiFetch('/api/meeting-mom/regenerate-section', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -140,11 +141,10 @@ export function MeetingMoM({ data, onUpdate, onShare, onDownload }: MeetingMoMPr
                 <button
                   key={level}
                   onClick={() => setVerbosity(level)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    verbosity === level
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${verbosity === level
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                    }`}
                 >
                   {level.charAt(0).toUpperCase() + level.slice(1)}
                 </button>
@@ -218,11 +218,10 @@ export function MeetingMoM({ data, onUpdate, onShare, onDownload }: MeetingMoMPr
             <button
               onClick={() => regenerateSection('discussion')}
               disabled={isRegenerating === 'discussion'}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors ${
-                isRegenerating === 'discussion'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors ${isRegenerating === 'discussion'
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-              }`}
+                }`}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRegenerating === 'discussion' ? 'animate-spin' : ''}`} />
               Regenerate
@@ -260,11 +259,10 @@ export function MeetingMoM({ data, onUpdate, onShare, onDownload }: MeetingMoMPr
             <button
               onClick={() => regenerateSection('actions')}
               disabled={isRegenerating === 'actions'}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors ${
-                isRegenerating === 'actions'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors ${isRegenerating === 'actions'
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-              }`}
+                }`}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRegenerating === 'actions' ? 'animate-spin' : ''}`} />
               Regenerate

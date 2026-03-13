@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "*",
+    "@ffmpeg-installer/ffmpeg": "*",
     "@langchain/community": "*",
     "@langchain/core": "*",
     "@langchain/openai": "*",
@@ -15,10 +16,12 @@
     "cookie-session": "*",
     "cors": "*",
     "dotenv": "*",
+    "encoding": "*",
+    "exceljs": "*",
     "express": "*",
+    "fluent-ffmpeg": "*",
     "mammoth": "*",
     "multer": "*",
-    "tsx": "*",
     "xlsx": "*"
   }
 }

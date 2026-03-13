@@ -1,3 +1,4 @@
+import { apiFetch } from '../../utils/apiFetch';
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Clock, Video, FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,7 +23,7 @@ export function MeetingMoMPage({ onBack, onSubmit, meetingMoMData, isLoading, pr
   const [historyLoading, setHistoryLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/mom-history', { credentials: 'include' })
+    apiFetch('/api/mom-history', { credentials: 'include' })
       .then(r => r.json())
       .then((data: any[]) => {
         setHistory(data.map(m => ({
@@ -32,7 +33,7 @@ export function MeetingMoMPage({ onBack, onSubmit, meetingMoMData, isLoading, pr
           actionItems: m.actionItems?.length ?? 0,
         })));
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setHistoryLoading(false));
   }, []);
 
@@ -41,7 +42,7 @@ export function MeetingMoMPage({ onBack, onSubmit, meetingMoMData, isLoading, pr
       setLocalMoMData(meetingMoMData);
       setShowInput(false);
       // Refresh history so the new MoM appears in the sidebar
-      fetch('/api/mom-history', { credentials: 'include' })
+      apiFetch('/api/mom-history', { credentials: 'include' })
         .then(r => r.json())
         .then((data: any[]) => {
           setHistory(data.map(m => ({
@@ -51,7 +52,7 @@ export function MeetingMoMPage({ onBack, onSubmit, meetingMoMData, isLoading, pr
             actionItems: m.actionItems?.length ?? 0,
           })));
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [meetingMoMData]);
 
@@ -64,13 +65,13 @@ export function MeetingMoMPage({ onBack, onSubmit, meetingMoMData, isLoading, pr
   const handleHistoryClick = (id: string) => {
     setSelectedHistory(id);
     setShowInput(false);
-    fetch('/api/mom-history', { credentials: 'include' })
+    apiFetch('/api/mom-history', { credentials: 'include' })
       .then(r => r.json())
       .then((data: any[]) => {
         const found = data.find(m => m.id === id);
         if (found) setLocalMoMData(found);
       })
-      .catch(() => {});
+      .catch(() => { });
   };
 
   const handleDownload = () => {
@@ -151,16 +152,14 @@ export function MeetingMoMPage({ onBack, onSubmit, meetingMoMData, isLoading, pr
                 <div
                   key={item.id}
                   onClick={() => handleHistoryClick(item.id)}
-                  className={`p-3 rounded-lg cursor-pointer transition-all ${
-                    selectedHistory === item.id
+                  className={`p-3 rounded-lg cursor-pointer transition-all ${selectedHistory === item.id
                       ? 'bg-blue-50 border border-blue-200'
                       : 'hover:bg-gray-50 border border-transparent'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start gap-2">
-                    <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                      selectedHistory === item.id ? 'bg-blue-100' : 'bg-gray-100'
-                    }`}>
+                    <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 ${selectedHistory === item.id ? 'bg-blue-100' : 'bg-gray-100'
+                      }`}>
                       <FileText className={`w-3.5 h-3.5 ${selectedHistory === item.id ? 'text-blue-600' : 'text-gray-500'}`} />
                     </div>
                     <div className="flex-1 min-w-0">

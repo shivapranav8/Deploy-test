@@ -12,8 +12,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const handleZohoLogin = () => {
     setIsLoading(true);
     // Redirect to backend which sends user to Zoho's login page.
-    // Each user logs in with their own Zoho account → sees only their data.
-    window.location.href = 'http://localhost:5001/api/auth/login';
+    // The backend function is deployed as /server/node-server/ on Catalyst
+    window.location.href = import.meta.env?.DEV
+      ? 'http://localhost:5001/api/auth/login'
+      : '/server/node-server/api/auth/login';
   };
 
   return (
@@ -42,11 +44,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           <button
             onClick={handleZohoLogin}
             disabled={isLoading}
-            className={`w-full py-4 rounded-lg font-medium transition-all text-lg ${
-              isLoading
-                ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl'
-            }`}
+            className={`w-full py-4 rounded-lg font-medium transition-all text-lg ${isLoading
+              ? 'bg-gray-300 cursor-not-allowed'
+              : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl'
+              }`}
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">

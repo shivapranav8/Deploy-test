@@ -4,10 +4,11 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && tsup",
     "dev": "vite",
     "server": "nodemon --watch server --exec tsx server/index.ts",
-    "start": "NODE_ENV=production ./node_modules/.bin/tsx server/index.ts"
+    "start": "NODE_ENV=production node dist/server/index.cjs",
+    "typecheck": "tsc -p tsconfig.server.json"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -97,6 +98,8 @@
     "@vitejs/plugin-react": "4.7.0",
     "nodemon": "^3.1.11",
     "tailwindcss": "4.1.12",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
     "vite": "6.3.5"
   },
   "pnpm": {

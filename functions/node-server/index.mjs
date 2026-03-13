@@ -1,5 +1,6 @@
 // Catalyst Advanced I/O entry point
-// Starts the Express server using tsx (TypeScript runner)
+// Runs the pre-built server bundle (dist/server/index.cjs)
+// NODE_PATH is set so CJS require() finds packages from this function's node_modules
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,11 +9,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const serverRoot = path.resolve(__dirname, '../../');
 
 const proc = spawn(
-  path.join(serverRoot, 'node_modules/.bin/tsx'),
-  [path.join(serverRoot, 'server/index.ts')],
+  process.execPath,
+  [path.join(serverRoot, 'dist/server/index.cjs')],
   {
     cwd: serverRoot,
-    env: { ...process.env, NODE_ENV: 'production' },
+    env: {
+      ...process.env,
+      NODE_ENV: 'production',
+      // CJS require() respects NODE_PATH — lets the bundle find its deps
+      // in the function's own node_modules (the only ones Catalyst installs)
+      NODE_PATH: path.join(__dirname, 'node_modules'),
+    },
     stdio: 'inherit',
   }
 );

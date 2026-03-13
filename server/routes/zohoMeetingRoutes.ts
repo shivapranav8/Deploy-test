@@ -13,8 +13,7 @@ export const zohoMeetingRouter = Router();
 const ACCOUNTS_BASE = 'https://accounts.zoho.in/oauth/v2';
 const MEETING_API_BASE = 'https://meeting.zohocorp.com/api/v2';
 const MEETING_RECORDINGS_BASE = 'https://meeting.zohocorp.com/meeting/api/v2';
-const REDIRECT_URI = process.env.ZOHO_MEETING_REDIRECT_URI || 'http://localhost:5001/api/zoho-meeting/callback';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+// Dynamic URIs constructed inside routes instead of globally using env constants
 
 // In-memory token store — seeded from .env
 const store: { accessToken: string; refreshToken: string; userKey: string } = {
@@ -121,9 +120,14 @@ zohoMeetingRouter.get('/auth', (req, res) => {
         return res.status(500).json({ error: 'No Zoho OAuth client ID found. Set ZOHO_CLIENT_ID in .env.' });
     }
 
-    // Reuse the main auth redirect URI (already configured in Zoho console)
+    // Reuse the main auth redirect URI
     // state=meeting tells the callback to store this as a Meeting token
-    const mainRedirectUri = process.env.ZOHO_REDIRECT_URI || 'http://localhost:5001/api/auth/callback';
+    const host = req.get('host') || 'localhost:5001';
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'http';
+    const prefix = req.originalUrl?.startsWith('/server/')
+        ? '/' + req.originalUrl.split('/')[1] + '/' + req.originalUrl.split('/')[2]
+        : '';
+    const mainRedirectUri = `${protocol}://${host}${prefix}/api/auth/callback`;
 
     const params = new URLSearchParams({
         response_type: 'code',
@@ -142,9 +146,21 @@ zohoMeetingRouter.get('/auth', (req, res) => {
 zohoMeetingRouter.get('/callback', async (req, res) => {
     const { code, error } = req.query as Record<string, string>;
 
+    const host = req.get('host') || 'localhost:5001';
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'http';
+    const prefix = req.originalUrl?.startsWith('/server/')
+        ? '/' + req.originalUrl.split('/')[1] + '/' + req.originalUrl.split('/')[2]
+        : '';
+
+    // Fallback frontend url for local dev, dynamic host for prod
+    let frontendUrl = `${protocol}://${host}${prefix}`;
+    if (host.includes('localhost:') && protocol === 'http') {
+        frontendUrl = 'http://localhost:5173'; // fallback for local dev
+    }
+
     if (error) {
         console.error('❌ Zoho Meeting OAuth error:', error);
-        return res.redirect(`${FRONTEND_URL}?zoho_meeting_error=${encodeURIComponent(error)}`);
+        return res.redirect(`${frontendUrl}?zoho_meeting_error=${encodeURIComponent(error)}`);
     }
 
     if (!code) {
@@ -171,7 +187,7 @@ zohoMeetingRouter.get('/callback', async (req, res) => {
                 code,
                 client_id: clientId,
                 client_secret: clientSecret,
-                redirect_uri: REDIRECT_URI,
+                redirect_uri: `${protocol}://${host}${prefix}/api/zoho-meeting/callback`,
             }),
         });
 
@@ -191,10 +207,10 @@ zohoMeetingRouter.get('/callback', async (req, res) => {
         store.refreshToken = tokenData.refresh_token || store.refreshToken;
 
         console.log('✅ Zoho Meeting connected successfully');
-        res.redirect(`${FRONTEND_URL}?zoho_meeting_connected=1`);
+        res.redirect(`${frontendUrl}?zoho_meeting_connected=1`);
     } catch (err) {
         console.error('❌ Zoho Meeting callback error:', err);
-        res.redirect(`${FRONTEND_URL}?zoho_meeting_error=auth_failed`);
+        res.redirect(`${frontendUrl}?zoho_meeting_error=auth_failed`);
     }
 });
 

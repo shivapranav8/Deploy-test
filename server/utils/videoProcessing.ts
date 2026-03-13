@@ -1,15 +1,20 @@
+import OpenAI from 'openai';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
 import fs from 'fs';
-import OpenAI from 'openai';
 
 // Set ffmpeg path
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy OpenAI client — initialized only when actually used (not at startup)
+let _openai: OpenAI | null = null;
+function getOpenAI() {
+    if (!_openai) {
+        _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    }
+    return _openai;
+}
 
 /**
  * Extract audio from video file
@@ -119,7 +124,7 @@ export async function analyzeFramesWithVision(framePaths: string[]): Promise<str
             const imageBuffer = fs.readFileSync(framePath);
             const base64Image = imageBuffer.toString('base64');
 
-            const response = await openai.chat.completions.create({
+            const response = await getOpenAI().chat.completions.create({
                 model: 'gpt-4o',
                 messages: [
                     {

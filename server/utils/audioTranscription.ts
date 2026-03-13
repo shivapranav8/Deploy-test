@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import fs from 'fs';
 import path from 'path';
-import chunk from 'lodash/chunk'; // You might need to install lodash if not present, or use custom chunking
+import chunk from 'lodash/chunk';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import { extractAudioFromVideo } from './videoProcessing';
@@ -9,10 +9,17 @@ import { extractAudioFromVideo } from './videoProcessing';
 // Set ffmpeg path
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    timeout: 20 * 60 * 1000, // 20 minutes timeout for large audio files
-});
+// Lazy OpenAI client — initialized only when actually used (not at startup)
+let _openai: OpenAI | null = null;
+function getOpenAI() {
+    if (!_openai) {
+        _openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+            timeout: 20 * 60 * 1000,
+        });
+    }
+    return _openai;
+}
 
 /**
  * Transcribe large audio file by splitting into chunks
@@ -55,7 +62,7 @@ async function transcribeLargeAudio(audioFilePath: string): Promise<string> {
             // Transcribe each chunk
             // Note: We call the API directly here to update progress
             const audioStream = fs.createReadStream(chunkPath);
-            const response = await openai.audio.transcriptions.create({
+            const response = await getOpenAI().audio.transcriptions.create({
                 file: audioStream,
                 model: 'whisper-1',
                 language: 'en',
@@ -108,7 +115,7 @@ export async function transcribeAudio(audioFilePath: string): Promise<string> {
         const audioStream = fs.createReadStream(audioFilePath);
 
         // Call OpenAI Whisper API
-        const transcription = await openai.audio.transcriptions.create({
+        const transcription = await getOpenAI().audio.transcriptions.create({
             file: audioStream,
             model: 'whisper-1',
             language: 'en', // Set to English but Whisper auto-detects mixed languages
