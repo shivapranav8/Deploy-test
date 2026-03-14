@@ -11,6 +11,16 @@ exports.api = onRequest(
     timeoutSeconds: 300,
     region: 'us-central1',
     minInstances: 0,
+    secrets: [
+      'OPENAI_API_KEY',
+      'ANTHROPIC_API_KEY',
+      'TAVILY_API_KEY',
+      'ZOHO_CLIENT_ID',
+      'ZOHO_CLIENT_SECRET',
+      'ZOHO_DESK_ORG_ID',
+      'ZOHO_MEETING_ORG_ID',
+      'SESSION_SECRET',
+    ],
   },
   app
 );
