@@ -998,9 +998,11 @@ Generated on: ${new Date().toLocaleString()}
             setUsername(name);
             localStorage.setItem('zoho_auth', JSON.stringify({ username: name }));
             toast.success(`Welcome, ${name}!`);
+          } else {
+            toast.error('Session not saved. Please try logging in again.');
           }
         })
-        .catch(() => toast.error('Login check failed. Please try again.'));
+        .catch((err) => toast.error(`Login check failed: ${err?.message || String(err)}`));
       // Clean the URL so ?auth_success=1 doesn't stay visible
       window.history.replaceState({}, '', window.location.pathname);
       return;

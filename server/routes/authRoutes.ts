@@ -201,10 +201,16 @@ authRouter.get('/callback', async (req: Request, res: Response) => {
         };
 
         console.log(`✅ User logged in: ${userInfo.email || userInfo.name}`);
-        res.redirect(`${frontendUrl}?auth_success=1`);
+        // Use a 200 HTML response instead of a 302 redirect so the Set-Cookie header
+        // is not stripped by Vercel's CDN/proxy layer (which can drop cookies on redirects).
+        const dest = `${frontendUrl}?auth_success=1`;
+        res.set('Content-Type', 'text/html');
+        return res.send(`<!DOCTYPE html><html><body><script>window.location.replace(${JSON.stringify(dest)})</script></body></html>`);
     } catch (err) {
         console.error('❌ Auth callback error:', err);
-        res.redirect(`${frontendUrl}?auth_error=callback_failed`);
+        const errDest = `${frontendUrl}?auth_error=callback_failed`;
+        res.set('Content-Type', 'text/html');
+        return res.send(`<!DOCTYPE html><html><body><script>window.location.replace(${JSON.stringify(errDest)})</script></body></html>`);
     }
 });
 
