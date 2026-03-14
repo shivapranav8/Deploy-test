@@ -24,8 +24,6 @@ export default defineConfig({
     'exceljs',
     'encoding',
     'xlsx',
-    'fluent-ffmpeg',
-    '@ffmpeg-installer/ffmpeg',
     'lodash',
     '@anthropic-ai/sdk',
     '@langchain/core',
